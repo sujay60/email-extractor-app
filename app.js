@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         id: index,
                         name: row['Channel Name'] || 'Unknown',
                         subs: row['Subscribers'] || 'N/A',
-                        link: row['Link'] || '',
+                        link: row['Link'] || row['Channel Link'] || '',
                         status: 'pending', // pending, scraping, done, failed
                         emailsFound: row['Emails'] || '', // Keep existing if any
                         socialsFound: ''
