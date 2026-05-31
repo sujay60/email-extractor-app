@@ -385,25 +385,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CSV Export ---
     btnExport.addEventListener('click', () => {
         if (queue.length === 0) return;
-        
-        let csvContent = "data:text/csv;charset=utf-8,Channel Name,Subscribers,Emails,Social Links,Link\n";
+        let csvContent = "Channel Name,Subscribers,Emails,Social Links,Link\n";
         queue.forEach(row => {
-            const name = `"${(row.name || '').replace(/"/g, '""')}"`;
-            const subs = `"${(row.subs || '').replace(/"/g, '""')}"`;
-            const emails = `"${(row.emailsFound || '').replace(/"/g, '""')}"`;
-            const socials = `"${(row.socialsFound || '').replace(/"/g, '""')}"`;
-            const link = `"${(row.link || '').replace(/"/g, '""')}"`;
+            // Strip out nasty control characters that break CSV parsers (like \x1A EOF or \0)
+            const sanitize = (str) => (str || '').replace(/[\x00-\x1F\x7F]/g, '').replace(/"/g, '""');
+
+            const name = `"${sanitize(row.name)}"`;
+            const subs = `"${sanitize(row.subs)}"`;
+            const emails = `"${sanitize(row.emailsFound)}"`;
+            const socials = `"${sanitize(row.socialsFound)}"`;
+            const link = `"${sanitize(row.link)}"`;
             
             csvContent += `${name},${subs},${emails},${socials},${link}\n`;
         });
 
-        const encodedUri = encodeURI(csvContent);
+        // Add BOM for Excel UTF-8 compatibility
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", url);
         link.setAttribute("download", `extracted_leads_${new Date().getTime()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
     });
 
     init();
