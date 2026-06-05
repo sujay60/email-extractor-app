@@ -317,12 +317,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const jitterMs = Math.floor(Math.random() * 2000) - 500; 
             const actualDelay = Math.max(1000, (limitSettings.humanDelay * 1000) + jitterMs);
 
+            let cleanUrl = currentItem.link || '';
+            if (cleanUrl.endsWith('/about')) {
+                cleanUrl = cleanUrl.substring(0, cleanUrl.length - 6);
+            }
+
             // Send to extension
             window.postMessage({
                 type: 'APP_COMMAND_SCRAPE',
                 payload: {
                     id: currentItem.id,
-                    url: currentItem.link,
+                    url: cleanUrl,
                     cacheKey: channelId,
                     delayMs: actualDelay
                 }
